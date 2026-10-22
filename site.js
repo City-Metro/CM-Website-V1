@@ -39,7 +39,7 @@ const SOCIAL = [
     icon: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/>' },
   { label: "X", href: "https://x.com/CityMetroAlert",
     icon: '<path d="M4 4l16 16M20 4L4 20" stroke-width="2.4"/>' },
-  { label: "YouTube", href: "https://youtube.com/CityMetroTransit",
+  { label: "YouTube", href: "https://youtube.com/@CityMetroTransit",
     icon: '<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor" stroke="none"/>' },
   { label: "Pixelfed", href: "https://pixelfed.social/citymetro",
     icon: '<rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/>' },
