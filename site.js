@@ -14,6 +14,7 @@ const NAV = [
     { label: "Support", href: "https://support.citymetro.xyz" },
     { label: "Republic State Railways", href: "https://rsr.citymetro.xyz" },
     { label: "City MetroLink", href: "https://metrolink.citymetro.xyz" },
+   { label: "Web Services Status", href: "https://status.citymetro.xyz" },
     { label: "Customer Code of Conduct", href: "https://police.citymetro.xyz/customercodeofconduct.pdf" },
     { label: "Contact", href: "/contact" } ] },
   { label: "Fares", href: "/fares", items: [
