@@ -1,7 +1,7 @@
 /* ===== EDIT ME ===== */
 const ANNOUNCEMENT = {
-  enabled: false, // set to true to show the bar
-  text: "Welcome to the brand new City Metro website..",
+  enabled: true, // set to true to show the bar
+  text: "Welcome to the brand new City Metro website! Please note this website is under development.",
   linkText: "Learn more",
   linkHref: "https://citymetro.xyz"
 };
@@ -49,11 +49,13 @@ function renderHeader() {
   }
   document.getElementById("site-header").innerHTML = `${bar}
   <header class="site-header"><div class="container header-inner">
-    <a class="logo" href="/" aria-label="City Metro home"><img src="https://alerts.citymetro.xyz/logo.png" alt="City Metro" onerror="this.replaceWith('m')"></a>
+    <a class="logo" href="/" aria-label="City Metro home"><img src="https://alerts.citymetro.xyz/logo.png" alt="City Metro"></a>
     <button class="menu-btn" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
     <nav class="nav" aria-label="Main"><ul class="nav-list">${items}</ul><div class="nav-cta-wrap"><a class="btn nav-cta" href="/contact">Contact Us</a></div></nav>
   </div></header>`;
 
+  const logoImg = document.querySelector(".logo img"); // CSP blocks inline onerror, so attach it here
+  if (logoImg) logoImg.addEventListener("error", () => logoImg.replaceWith("m"), { once: true });
   const btn = document.querySelector(".menu-btn"), nav = document.querySelector(".nav");
   btn.onclick = () => { const o = nav.classList.toggle("open"); btn.setAttribute("aria-expanded", o); document.body.style.overflow = o ? "hidden" : ""; };
   document.querySelectorAll(".dd-toggle").forEach(t => t.onclick = (e) => {
