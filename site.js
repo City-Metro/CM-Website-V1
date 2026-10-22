@@ -14,7 +14,7 @@ const NAV = [
     { label: "Support", href: "https://support.citymetro.xyz" },
     { label: "Republic State Railways", href: "https://rsr.citymetro.xyz" },
     { label: "City MetroLink", href: "https://metrolink.citymetro.xyz" },
-   { label: "Web Services Status", href: "https://status.citymetro.xyz" },
+    { label: "Web Services Status", href: "https://status.citymetro.xyz" },
     { label: "Customer Code of Conduct", href: "https://police.citymetro.xyz/customercodeofconduct.pdf" },
     { label: "Contact", href: "/contact" } ] },
   { label: "Fares", href: "/fares", items: [
@@ -33,6 +33,19 @@ const NAV = [
 // Noupe assistant: paste the embed code Noupe gives you between the backticks.
 // (Leave empty to hide the assistant.)
 const NOUPE_SNIPPET = `<script src='https://www.noupe.com/embed/01a0f9a8fe0870008c410c945c6507b28d60.js'></script>`;
+// Footer social links. Add or remove lines as needed.
+const SOCIAL = [
+  { label: "Instagram", href: "https://instagram.com/citymetroalerts",
+    icon: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/>' },
+  { label: "X", href: "https://x.com/CityMetroAlert",
+    icon: '<path d="M4 4l16 16M20 4L4 20" stroke-width="2.4"/>' },
+  { label: "YouTube", href: "https://youtube.com/CityMetroTransit",
+    icon: '<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor" stroke="none"/>' },
+  { label: "Pixelfed", href: "https://pixelfed.social/citymetro",
+    icon: '<rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/>' },
+  { label: "Mastodon", href: "https://mastodon.social/@citymetro",
+    icon: '<path d="M5 4h14a2 2 0 0 1 2 2v7a5 5 0 0 1-5 5h-3l-5 3v-3a5 5 0 0 1-3-4.6V6a2 2 0 0 1 2-2z"/><path d="M8 14V9.5a1.5 1.5 0 0 1 3 0V14M11 11a1.5 1.5 0 0 1 3 0V14"/>', rel: " me" }
+];
 /* ==================== */
 
 const path = location.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/";
@@ -73,9 +86,11 @@ function renderHeader() {
 function renderFooter() {
   const n = document.body.dataset.footerNote;
   const note = n ? `<p class="footer-note">${n}</p>` : "";
+  const social = SOCIAL.map(s => `<a href="${s.href}" target="_blank" rel="noopener noreferrer${s.rel || ""}" aria-label="${s.label}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${s.icon}</svg>${s.label}</a>`).join("");
   const cols = NAV.filter(n => n.items).map(n => `<div><h4>${n.label}</h4><ul>${n.items.map(li).join("")}</ul></div>`).join("");
   document.getElementById("site-footer").innerHTML = `<footer class="site-footer"><div class="container">
     <div class="footer-cols">${cols}</div>
+    <div class="social" aria-label="Social media">${social}</div>
     <div class="legal"><span>© City Metro Transit. A subsidiary of the Republic States Railway and Transportation Authority.</span>
     <span><a href="/terms">Terms of Service</a> &nbsp;·&nbsp; <a href="/privacy">Privacy Policy</a></span></div>${note}
   </div></footer>`;
