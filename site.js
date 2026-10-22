@@ -49,7 +49,7 @@ function renderHeader() {
   }
   document.getElementById("site-header").innerHTML = `${bar}
   <header class="site-header"><div class="container header-inner">
-    <a class="logo" href="/" aria-label="City Metro home"><img src="https://alerts.citymetro.xyz/logo.png" alt="City Metro"></a>
+    <a class="logo" href="/" aria-label="City Metro home"><img src="/logo.png" alt="City Metro"></a>
     <button class="menu-btn" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
     <nav class="nav" aria-label="Main"><ul class="nav-list">${items}</ul><div class="nav-cta-wrap"><a class="btn nav-cta" href="/contact">Contact Us</a></div></nav>
   </div></header>`;
