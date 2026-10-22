@@ -185,3 +185,9 @@ a.btn.ghost:hover{background:var(--card)}
 .u-margin-28px-0-64px{margin:28px 0 64px}
 .u-margin-top-0{margin-top:0}
 .u-text-align-center-margin-32px-0-64px{text-align:center;margin:32px 0 64px}
+
+/* legal pages */
+.legal-doc h2{font-size:1.3rem}
+.legal-doc h3{margin:26px 0 4px}
+.legal-doc ul{padding-left:1.3rem}
+.legal-doc li{margin:6px 0}
