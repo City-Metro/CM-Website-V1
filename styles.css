@@ -216,3 +216,86 @@ a.btn.ghost:hover{background:var(--card)}
 .center-row{justify-content:center}
 .cta-band .btn-row a.btn{min-width:160px}
 .faq.measure{margin-bottom:8px}
+
+/* transit hub: Plan a Trip + Service Status */
+.hub-wrap{position:relative;z-index:2;margin-top:-36px}
+.hub{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:20px;align-items:start}
+.hub-panel{border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.12);background:var(--bg);border:1px solid var(--line)}
+.hub-head{padding:20px 24px}
+.hub-head h2{margin:0;font-size:1.7rem}
+.hub-body{padding:20px 24px 24px}
+.plan-panel{background:var(--blue);color:#fff;border-color:var(--blue)}
+.plan-panel .hub-head{border-bottom:2px solid #fff}
+.plan-panel .hub-body{display:flex;flex-direction:column;gap:14px}
+.field{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.16);border-radius:12px;padding:0 16px;min-height:54px}
+.field span{font-weight:700;min-width:46px}
+.field input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:#fff;font:inherit;padding:14px 0}
+.field input::placeholder{color:rgba(255,255,255,.75)}
+.field:focus-within{outline:2px solid #fff}
+.swap{align-self:flex-end;display:flex;align-items:center;justify-content:center;width:40px;height:40px;margin:-6px 0;border-radius:50%;border:2px solid rgba(255,255,255,.7);background:transparent;color:#fff;cursor:pointer}
+.swap:hover{background:rgba(255,255,255,.16)}
+.swap svg{width:22px;height:22px;fill:currentColor}
+.pref{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:700}
+.pref select{background:rgba(255,255,255,.16);color:#fff;border:0;border-radius:10px;padding:10px 12px;min-height:44px;font:inherit}
+.pref select option{color:#000}
+.btn-light{min-height:52px;border:0;border-radius:12px;background:#fff;color:var(--blue);font:inherit;font-weight:700;cursor:pointer}
+.btn-light:hover{background:#e8effa}
+.status-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;padding-bottom:0;border-bottom:2px solid var(--blue)}
+.tabs{display:flex;gap:4px}
+.tab{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:84px;padding:8px 16px;border:0;border-radius:10px 10px 0 0;background:transparent;color:var(--tile-ink);font:inherit;font-weight:700;cursor:pointer}
+.tab svg{width:26px;height:26px;fill:currentColor}
+.tab[aria-selected="true"]{background:var(--blue);color:#fff}
+.st-msg{color:var(--muted);margin:8px 0}
+.st-group{padding:14px 0;border-top:1px solid var(--line)}
+.st-group:first-child{border-top:0;padding-top:0}
+.st-group h3{margin:0 0 10px;font-size:1.05rem;color:var(--tile-ink)}
+.lbs{display:flex;flex-wrap:wrap;gap:10px}
+.lb{display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;overflow:hidden;font-weight:700;font-size:1.05rem;line-height:1;text-decoration:none;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.lb img{width:100%;height:100%;object-fit:cover}
+a.lb:hover,a.lb:focus-visible{transform:scale(1.08);outline:2px solid var(--blue);outline-offset:2px}
+.lb.sm{width:30px;height:30px;font-size:.8rem}
+.st-preview{margin-top:8px;padding-top:16px;border-top:1px solid var(--line)}
+.st-preview h3{margin:0 0 10px;font-size:1.05rem;color:var(--tile-ink)}
+.pv{border:1.5px solid var(--tile);border-radius:16px;padding:14px 16px;margin-bottom:12px}
+.pv-top{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between}
+.pv h4{margin:8px 0 4px;font-size:1.02rem}
+.pv h4 a{text-decoration:none}
+.pv h4 a:hover{text-decoration:underline}
+.pv p{margin:0 0 10px;color:var(--muted);font-size:.95rem}
+.pv-when{color:var(--muted);font-size:.85rem}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;background:#64748b;color:#fff;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.pill[data-level="emergency"]{background:#7f1d1d}.pill[data-level="critical"]{background:#dc2626}
+.pill[data-level="major"]{background:#ea580c}.pill[data-level="minor"]{background:#ca8a04}
+.pill[data-level="maintenance"]{background:#7c3aed}
+.st-more{margin:0 0 8px}
+.st-foot{margin:18px 0 0}
+@media (max-width:800px){
+.hub-wrap{margin-top:-24px}
+.hub{grid-template-columns:1fr;gap:0;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.12);border:1px solid var(--line)}
+.hub-panel{border-radius:0;box-shadow:none;border:0}
+}
+/* trip results */
+.trip-form-panel{max-width:640px;margin:24px 0 8px}
+.trip-route{margin:28px 0 14px;font-size:clamp(1.4rem,4vw,2rem)}
+.mode-tabs{display:flex;flex-wrap:wrap;gap:10px}
+.mode-tab{padding:10px 18px;border:2px solid var(--blue);border-radius:999px;background:transparent;color:var(--text);font:inherit;font-weight:700;cursor:pointer}
+.mode-tab[aria-selected="true"]{background:var(--blue);color:#fff}
+.trip-card{margin-top:18px;padding:26px;border:1.5px solid var(--tile);border-radius:24px;background:var(--bg)}
+.trip-sum{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px}
+.trip-time{font-size:2.6rem;font-weight:700;line-height:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:4px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:.9rem;color:var(--muted)}
+.legs{list-style:none;margin:18px 0 0;padding:0}
+.leg{display:grid;grid-template-columns:46px 1fr;gap:16px;padding:16px 0;border-top:1px solid var(--line)}
+.leg h3{margin:0 0 2px;font-size:1.05rem}
+.leg p{margin:0;color:var(--muted)}
+.leg-ic{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;background:var(--tile);color:var(--tile-ink)}
+.leg-ic svg{width:24px;height:24px;fill:currentColor}
+.leg details{margin-top:6px;color:var(--muted)}
+.leg summary{cursor:pointer;font-weight:700;color:var(--tile-ink)}
+.stops{margin:8px 0 0;padding-left:1.3rem}
+/* footer social */
+.social{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
+.social a{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1.5px solid var(--tile);border-radius:999px;color:var(--text);font-weight:700;font-size:.92rem;text-decoration:none}
+.social a:hover{border-color:var(--blue);color:var(--tile-ink)}
+.social svg{width:18px;height:18px}
