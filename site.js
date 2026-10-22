@@ -7,8 +7,7 @@ const ANNOUNCEMENT = {
 };
 const NAV = [
   { label: "Home", href: "/" },
-  { label: "About", items: [
-    { label: "About City Metro", href: "/about" },
+  { label: "About", href: "/about", items: [
     { label: "Rail & Bus Lines", href: "/lines" },
     { label: "City Metro Shop", href: "https://shop.citymetro.xyz" },
     { label: "Museum", href: "https://museum.citymetro.xyz" },
@@ -17,16 +16,14 @@ const NAV = [
     { label: "City MetroLink", href: "https://metrolink.citymetro.xyz" },
     { label: "Customer Code of Conduct", href: "https://police.citymetro.xyz/customercodeofconduct.pdf" },
     { label: "Contact", href: "/contact" } ] },
-  { label: "Fares", items: [
-    { label: "Fares & Passes", href: "/fares" },
+  { label: "Fares", href: "/fares", items: [
     { label: "MyBrickPass", href: "https://mybrickpass.citymetro.xyz" } ] },
   { label: "Ride", items: [
     { label: "Trip Planner", href: "https://trip-planner.citymetro.xyz" },
     { label: "Map", href: "https://map.citymetro.xyz" },
     { label: "Alerts", href: "https://alerts.citymetro.xyz" },
     { label: "Single Sign-On", href: "https://auth.citymetro.xyz" } ] },
-  { label: "Safety", items: [
-    { label: "Safety & Emergency Info", href: "/safety" },
+  { label: "Safety", href: "/safety", items: [
     { label: "Transit Police", href: "https://police.citymetro.xyz" },
     { label: "Lego City Police", href: "https://lcpolice.wordpress.com" },
     { label: "LCSD", href: "https://lcsdonline.wordpress.com" } ] }
@@ -41,7 +38,9 @@ const path = location.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/";
 const li = (i) => `<li><a href="${i.href}">${i.label}</a></li>`;
 
 function renderHeader() {
-  const items = NAV.map(n => n.items
+  const items = NAV.map(n => n.items && n.href
+    ? `<li class="has-dd split"><a class="nav-link ${path === n.href ? "active" : ""}" href="${n.href}">${n.label}</a><button class="dd-toggle" aria-label="${n.label} menu" aria-expanded="false"></button><ul class="dd-menu">${n.items.map(li).join("")}</ul></li>`
+    : n.items
     ? `<li class="has-dd"><button class="dd-toggle" aria-expanded="false">${n.label}</button><ul class="dd-menu">${n.items.map(li).join("")}</ul></li>`
     : `<li><a class="nav-link ${path === n.href ? "active" : ""}" href="${n.href}">${n.label}</a></li>`).join("");
   let bar = "";
@@ -60,7 +59,7 @@ function renderHeader() {
   document.querySelectorAll(".dd-toggle").forEach(t => t.onclick = (e) => {
     e.stopPropagation();
     const p = t.parentElement, wasOpen = p.classList.contains("open");
-    document.querySelectorAll(".has-dd").forEach(x => { x.classList.remove("open"); x.firstElementChild.setAttribute("aria-expanded", "false"); });
+    document.querySelectorAll(".has-dd").forEach(x => { x.classList.remove("open"); x.querySelector(".dd-toggle").setAttribute("aria-expanded", "false"); });
     if (!wasOpen) { p.classList.add("open"); t.setAttribute("aria-expanded", "true"); }
   });
   document.addEventListener("click", () => document.querySelectorAll(".has-dd").forEach(x => x.classList.remove("open")));
