@@ -1,6 +1,6 @@
 /* ===== EDIT ME ===== */
 const ANNOUNCEMENT = {
-  enabled: true, // set to true to show the bar
+  enabled: true, // set to true to show bar
   text: "Welcome to your brand new beta City Metro website! Click below for the current website.",
   linkText: "Learn more",
   linkHref: "https://citymetro.xyz"
