@@ -1,9 +1,9 @@
 /* ===== EDIT ME ===== */
 const ANNOUNCEMENT = {
-  enabled: true, // set to true to show bar
-  text: "Welcome to your brand new City Metro website! Please note this website is currently under developement.",
-  linkText: "Current Website",
-  linkHref: "https://citymetro.xyz"
+  enabled: false, // set to true to show the bar
+  text: "Service alert: please report safety concerns to City Metro Transit Police.",
+  linkText: "Learn more",
+  linkHref: "https://alerts.citymetro.xyz"
 };
 const NAV = [
   { label: "Home", href: "/" },
@@ -31,7 +31,7 @@ const NAV = [
 
 // Noupe assistant: paste the embed code Noupe gives you between the backticks.
 // (Leave empty to hide the assistant.)
-const NOUPE_SNIPPET = ``;
+const NOUPE_SNIPPET = `<script src='https://www.noupe.com/embed/01a0f9a8fe0870008c410c945c6507b28d60.js'></script>`;
 /* ==================== */
 
 const path = location.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/";
@@ -49,7 +49,7 @@ function renderHeader() {
   }
   document.getElementById("site-header").innerHTML = `${bar}
   <header class="site-header"><div class="container header-inner">
-    <a class="logo" href="/" aria-label="City Metro home"><img src="https://alerts.citymetro.xyz/logo.png" alt="City Metro" onerror="this.replaceWith('m')"></a>
+    <a class="logo" href="/" aria-label="City Metro home"><img src="/logo.png" alt="City Metro" onerror="this.replaceWith('m')"></a>
     <button class="menu-btn" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
     <nav class="nav" aria-label="Main"><ul class="nav-list">${items}</ul><div class="nav-cta-wrap"><a class="btn nav-cta" href="/contact">Contact Us</a></div></nav>
   </div></header>`;
