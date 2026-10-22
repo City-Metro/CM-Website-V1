@@ -1,0 +1,17 @@
+{
+  "name": "cm-website-v1",
+  "version": "1.0.1",
+  "private": true,
+  "description": "City Metro Transit website: static HTML, CSS and JS hosted on Cloudflare Pages.",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "npx --yes serve .",
+    "start": "npx --yes serve ."
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "serve": "^14.2.6"
+  }
+}
