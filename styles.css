@@ -167,3 +167,12 @@ a.btn.ghost:hover{background:var(--card)}
 /* logo pulls from /logo.png */
 .logo{width:auto;height:auto;border:0;border-radius:0;padding:0;font-size:inherit}
 .logo img{display:block;height:44px;width:auto}
+
+/* dark mode: turn the black logo white */
+@media (prefers-color-scheme:dark){.logo img{filter:brightness(0) invert(1)}}
+/* 404 */
+.nf-img{border-radius:28px;aspect-ratio:2/1;min-height:220px;max-height:420px;background:#0d2a5f url(/404.svg) center/cover no-repeat;border:1px solid var(--line);margin:40px 0 32px}
+.nf{text-align:center;padding-bottom:72px}
+.nf h1{font-size:clamp(2.2rem,6vw,3.4rem);margin:0 0 8px}
+.nf p{color:var(--muted);font-size:1.15rem;margin:0 auto 24px;max-width:520px}
+.nf .btn-row{justify-content:center}
