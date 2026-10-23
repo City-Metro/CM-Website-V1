@@ -10,7 +10,7 @@
     TRIP_SITE: 'https://trip-planner.citymetro.xyz',
     // Optional: put your own copies of the rail line images on this site (e.g. /img/lines/a.svg or a.png, named by the line's slug)
     // and set this to '/img/lines/'. They are tried first, then the image from the database. Leave '' to use the database images only.
-    LOCAL_IMG_DIR: '',
+    LOCAL_IMG_DIR: '/img/lines/',
     PLANNER_URL: 'https://trip-planner.citymetro.xyz/planner',   // opened as ?from=<station id>&to=<station id>
     PLANNER_HOME: 'https://trip-planner.citymetro.xyz',
     // Which field on each alerts line says "rail", "bus" or "accessibility". Tried in this order.
@@ -320,8 +320,11 @@
         // Rail lines use their picture; bus lines always show their number.
         lines.forEach(l => {
           l.iconUrl = kindOf(l) === 'bus' ? null : (pickImage(l, CFG.ALERTS_SITE) || tripImg[slugOf(l)] || tripImg[String(l.id).toLowerCase()] || null);
+          // Your own copies first (/img/lines/a.svg, then a.png), then the database image.
           const s = encodeURIComponent(slugOf(l));
-          l.iconUrls = l.iconUrl ? [...(CFG.LOCAL_IMG_DIR ? [CFG.LOCAL_IMG_DIR + s + '.svg', CFG.LOCAL_IMG_DIR + s + '.png'] : []), l.iconUrl] : null;
+          l.iconUrls = kindOf(l) === 'bus' ? null
+            : [...(CFG.LOCAL_IMG_DIR ? [CFG.LOCAL_IMG_DIR + s + '.svg', CFG.LOCAL_IMG_DIR + s + '.png'] : []), l.iconUrl].filter(Boolean);
+          l.iconUrl = l.iconUrls && l.iconUrls.length ? l.iconUrls[0] : null;
         });
         data = { lines, inc: Array.isArray(inc) ? inc : [], mnt: Array.isArray(mnt) ? mnt : [] };
         render();
