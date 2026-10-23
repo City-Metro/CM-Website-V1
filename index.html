@@ -3,7 +3,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>City Metro Transit | Transit for LC</title><meta name="description" content="Reliable rail and bus service across Lego City County.">
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/styles.css?v=20261022b">
 <link rel="icon" href="https://alerts.citymetro.xyz/logo.png" type="image/png">
 </head><body>
 <div id="site-header"></div>
@@ -17,13 +17,12 @@
 <div class="hub">
 <section class="hub-panel plan-panel" aria-labelledby="plan-title">
 <div class="hub-head"><h2 id="plan-title">Plan a Trip</h2></div>
-<form class="hub-body" id="plan-form" action="/trip" method="get" autocomplete="off">
+<form class="hub-body" id="plan-form" action="https://trip-planner.citymetro.xyz" method="get" autocomplete="off">
 <label class="field"><span>From</span><input name="from" placeholder="Station or stop" required></label>
 <button type="button" class="swap" id="plan-swap" aria-label="Swap from and to"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/></svg></button>
 <label class="field"><span>To</span><input name="to" placeholder="Station or stop" required></label>
-<label class="pref"><span>Travel preference</span><select name="mode"><option value="fastest">Fastest</option><option value="fewest_transfers">Fewest transfers</option><option value="fewest_walking">Least walking</option></select></label>
+<p class="plan-msg" id="plan-msg" role="status"></p>
 <button class="btn-light" type="submit">Plan My Trip</button>
-<datalist id="station-list"></datalist>
 </form>
 </section>
 <section class="hub-panel status-panel" aria-labelledby="status-title">
@@ -81,6 +80,6 @@
 </div>
 </main>
 <div id="site-footer"></div>
-<script src="/site.js"></script>
-<script src="/transit.js" defer></script>
+<script src="/site.js?v=20261022b"></script>
+<script src="/transit.js?v=20261022b" defer></script>
 </body></html>
