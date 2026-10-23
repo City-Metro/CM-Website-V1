@@ -8,6 +8,8 @@
     ALERTS_SITE: 'https://alerts.citymetro.xyz',
     LINE_URL: 'https://alerts.citymetro.xyz/lines/line?id=',   // + the line's slug (a, b, 76 ...)
     TRIP_SITE: 'https://trip-planner.citymetro.xyz',
+    PLANNED_URL: 'https://alerts.citymetro.xyz',   // "Planned Service Changes" row
+    ACCESS_URL: 'https://alerts.citymetro.xyz',    // "Elevator & Escalator Status" row
     // Optional: put your own copies of the rail line images on this site (e.g. /img/lines/a.svg or a.png, named by the line's slug)
     // and set this to '/img/lines/'. They are tried first, then the image from the database. Leave '' to use the database images only.
     LOCAL_IMG_DIR: '/img/lines/',
@@ -290,8 +292,36 @@
         items.length > 3 ? el('p', { class: 'st-more' }, el('a', { href: CFG.ALERTS_SITE, text: `+${items.length - 3} more alert${items.length - 3 > 1 ? 's' : ''}` })) : null);
     }
 
+    const SEARCH = 'M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z';
+    const CHEV = 'M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z';
+    let busQuery = '';
+    // "Find and Track Buses": type a route number and go straight to that line's page.
+    function busSearch(all) {
+      const buses = all.filter(l => kindOf(l) === 'bus');
+      const input = el('input', { type: 'search', name: 'route', placeholder: 'Enter route number', autocomplete: 'off', 'aria-label': 'Route number' });
+      input.value = busQuery;
+      input.addEventListener('input', () => { busQuery = input.value; });
+      const msg = el('p', { class: 'bs-msg', role: 'status' });
+      const form = el('form', { class: 'bus-search', role: 'search' },
+        el('h3', { text: 'Find and Track Buses' }),
+        el('div', { class: 'bs-row' }, input, el('button', { type: 'submit', class: 'bs-go', 'aria-label': 'Search' }, svgIcon(SEARCH))), msg);
+      form.addEventListener('submit', e => {
+        e.preventDefault(); msg.textContent = '';
+        const raw = input.value.trim().toLowerCase();
+        if (!raw) { msg.textContent = 'Enter a route number.'; return; }
+        const q = raw.replace(/^(line|route)\s+/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        const hit = buses.find(l => slugOf(l) === q) || buses.find(l => String(l.name || '').toLowerCase().includes(raw));
+        if (hit) location.href = lineUrl(hit); else msg.textContent = `We couldn’t find a bus route “${input.value.trim()}”.`;
+      });
+      return form;
+    }
+    const linkRows = () => el('nav', { class: 'st-links', 'aria-label': 'More service information' },
+      [['Planned Service Changes', CFG.PLANNED_URL], ['Elevator & Escalator Status', CFG.ACCESS_URL]]
+        .map(([text, href]) => el('a', { class: 'st-link', href }, el('span', { text }), svgIcon(CHEV))));
+
     function render() {
       if (!data) return;
+      if (body.contains(document.activeElement) && document.activeElement.matches('input')) return;
       const all = data.lines, mine = dedupe(all.filter(l => kindOf(l) === kind));
       const known = new Set(GROUPS.map(g => g[0]));
       const groups = GROUPS.map(([key, label]) => {
@@ -300,8 +330,10 @@
           el('div', { class: 'lbs' }, ls.map(l => badge(l, { href: lineUrl(l), title: `${l.name}: ${label}` })))) : null;
       });
       body.replaceChildren(...[
+        kind === 'bus' ? busSearch(all) : null,
         ...(mine.length ? groups : [el('p', { class: 'st-msg', text: `No ${kind} lines to show yet.` })]),
         preview(all),
+        linkRows(),
         el('p', { class: 'st-foot' }, el('a', { class: 'btn ghost', href: CFG.ALERTS_SITE, text: 'View all alerts' }))
       ].filter(Boolean));
     }
