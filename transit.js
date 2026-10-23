@@ -8,6 +8,9 @@
     ALERTS_SITE: 'https://alerts.citymetro.xyz',
     LINE_URL: 'https://alerts.citymetro.xyz/lines/line?id=',   // + the line's slug (a, b, 76 ...)
     TRIP_SITE: 'https://trip-planner.citymetro.xyz',
+    // Optional: put your own copies of the rail line images on this site (e.g. /img/lines/a.svg or a.png, named by the line's slug)
+    // and set this to '/img/lines/'. They are tried first, then the image from the database. Leave '' to use the database images only.
+    LOCAL_IMG_DIR: '/img/lines/',
     PLANNER_URL: 'https://trip-planner.citymetro.xyz/planner',   // opened as ?from=<station id>&to=<station id>
     PLANNER_HOME: 'https://trip-planner.citymetro.xyz',
     // Which field on each alerts line says "rail", "bus" or "accessibility". Tried in this order.
@@ -59,27 +62,28 @@
   // Line images load quietly in the background: the letter/number shows straight away, the picture replaces it
   // once it has really loaded, and a failed load is retried (a busy image host sometimes refuses a burst of
   // requests right after a page reload). If it never loads, the letter simply stays.
-  const imgOk = new Set();
   const bust = u => u + (u.includes('?') ? '&' : '?') + 'r=' + Date.now();
-  function loadImage(url, onOk) {
-    const delays = [0, 1200, 3500];
+  function loadImage(urls, onOk) {
+    const list = urls.filter(Boolean); if (!list.length) return;
+    // Try each address once, then once more (slightly later, with a fresh address) in case the host was briefly busy.
+    const seq = [...list.map(u => ({ u, d: 0 })), ...list.map(u => ({ u, d: 1500, retry: true }))];
     let i = 0;
-    const attempt = () => {
-      const im = new Image(); im.alt = '';
-      im.onload = () => { imgOk.add(url); onOk(im); };
-      im.onerror = () => {
-        if (++i < delays.length) setTimeout(attempt, delays[i]);
-        else console.warn('City Metro: line image did not load:', url);
-      };
-      im.src = i ? bust(url) : url;
+    const next = () => {
+      if (i >= seq.length) { console.warn('City Metro: line image did not load:', list.join(' | ')); return; }
+      const { u, d, retry } = seq[i++];
+      setTimeout(() => {
+        const im = new Image(); im.alt = '';
+        im.onload = () => onOk(im); im.onerror = next;
+        im.src = retry ? bust(u) : u;
+      }, d);
     };
-    attempt();
+    next();
   }
   function badge(l, { small = false, href = null, title = null } = {}) {
     const bg = l.color || '#64748b';
     const node = el(href ? 'a' : 'span', { class: 'lb' + (small ? ' sm' : ''), href, title: title || l.name || null, 'aria-label': title || l.name || null }, shortName(l));
     node.style.background = bg; node.style.color = l.text_color || textOn(bg);
-    if (l.iconUrl) loadImage(l.iconUrl, im => node.replaceChildren(im));
+    if (l.iconUrl) loadImage(l.iconUrls || [l.iconUrl], im => node.replaceChildren(im));
     return node;
   }
 
@@ -300,7 +304,11 @@
         (Array.isArray(trip) ? trip : []).forEach(x => { const u = pickImage(x, CFG.TRIP_SITE); if (u) { tripImg[slugOf(x)] = u; tripImg[String(x.id).toLowerCase()] = u; } });
         const lines = st.lineStatuses || [];
         // Rail lines use their picture; bus lines always show their number.
-        lines.forEach(l => { l.iconUrl = kindOf(l) === 'bus' ? null : (pickImage(l, CFG.ALERTS_SITE) || tripImg[slugOf(l)] || tripImg[String(l.id).toLowerCase()] || null); });
+        lines.forEach(l => {
+          l.iconUrl = kindOf(l) === 'bus' ? null : (pickImage(l, CFG.ALERTS_SITE) || tripImg[slugOf(l)] || tripImg[String(l.id).toLowerCase()] || null);
+          const s = encodeURIComponent(slugOf(l));
+         l.iconUrls = l.iconUrl ? [...(CFG.LOCAL_IMG_DIR ? [CFG.LOCAL_IMG_DIR + s + '.svg'] : []), l.iconUrl] : null;
+        });
         data = { lines, inc: Array.isArray(inc) ? inc : [], mnt: Array.isArray(mnt) ? mnt : [] };
         render();
       } catch {
