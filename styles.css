@@ -299,3 +299,16 @@ a.lb:hover,a.lb:focus-visible{transform:scale(1.08);outline:2px solid var(--blue
 .social a{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1.5px solid var(--tile);border-radius:999px;color:var(--text);font-weight:700;font-size:.92rem;text-decoration:none}
 .social a:hover{border-color:var(--blue);color:var(--tile-ink)}
 .social svg{width:18px;height:18px}
+
+.plan-msg{margin:0;min-height:1.2em;font-weight:700}
+
+/* station suggestions */
+.field{position:relative}
+.plan-panel{overflow:visible;position:relative;z-index:5}
+.sugg{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:40;margin:0;padding:6px;list-style:none;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.25);max-height:300px;overflow-y:auto}
+.sugg[hidden]{display:none}
+.sugg li{display:flex;flex-direction:column;padding:10px 12px;border-radius:10px;cursor:pointer}
+.sugg li[aria-selected="true"],.sugg li:hover{background:var(--tile)}
+.sg-name{font-weight:700}
+.sg-sub{font-size:.85rem;color:var(--muted)}
+.plan-msg .sugg-btn{margin:6px 6px 0 0;padding:6px 12px;border:1.5px solid #fff;border-radius:999px;background:transparent;color:#fff;font:inherit;font-weight:700;cursor:pointer}
