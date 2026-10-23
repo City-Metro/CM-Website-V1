@@ -299,22 +299,56 @@
     let busQuery = '';
     // "Find and Track Buses": type a route number and go straight to that line's page.
     function busSearch(all) {
-      // Routes we know about: bus lines from the alerts list plus bus lines from the trip planner's database.
+      // Routes we know about: bus lines from the alerts list (with their status) plus bus lines from the trip planner's database.
       const known = [...all.filter(l => kindOf(l) === 'bus'), ...((data.trip || []).filter(x => String(x.type || '').toLowerCase() === 'bus'))];
-      const input = el('input', { type: 'search', name: 'route', placeholder: 'Enter route number', autocomplete: 'off', 'aria-label': 'Route number' });
+      const routes = [], seen = new Set();
+      for (const l of known) { const s = slugOf(l); if (!seen.has(s)) { seen.add(s); routes.push({ name: l.name || s, slug: s, status: l.status }); } }
+      const statusLabel = s => (GROUPS.find(g => g[0] === s) || [])[1] || '';
+      const go = r => { location.href = CFG.PLANNER_LINE_URL + encodeURIComponent(r.slug); };
+
+      const input = el('input', { type: 'search', name: 'route', placeholder: 'Enter route number', autocomplete: 'off', 'aria-label': 'Route number', role: 'combobox', 'aria-autocomplete': 'list', 'aria-expanded': 'false' });
       input.value = busQuery;
-      input.addEventListener('input', () => { busQuery = input.value; });
+      const list = el('ul', { class: 'sugg inline', role: 'listbox', hidden: true });
       const msg = el('p', { class: 'bs-msg', role: 'status' });
       const form = el('form', { class: 'bus-search', role: 'search' },
         el('h3', { text: 'Find and Track Buses' }),
-        el('div', { class: 'bs-row' }, input, el('button', { type: 'submit', class: 'bs-go', 'aria-label': 'Search' }, svgIcon(SEARCH))), msg);
+        el('div', { class: 'bs-row' }, input, el('button', { type: 'submit', class: 'bs-go', 'aria-label': 'Search' }, svgIcon(SEARCH))), list, msg);
+
+      // Pop-up list of matching routes, with each route's current status.
+      let items = [], active = -1;
+      const hide = () => { list.hidden = true; active = -1; input.setAttribute('aria-expanded', 'false'); };
+      const paint = () => [...list.children].forEach((li, i) => li.setAttribute('aria-selected', String(i === active)));
+      function show() {
+        const q = norm(input.value).replace(/^(line|route) /, '');
+        const rank = r => { const nm = norm(r.name); return !q ? 1 : r.slug === q ? 100 : r.slug.startsWith(q) ? 90 : nm.includes(q) ? 70 : 0; };
+        items = routes.map(r => ({ r, s: rank(r) })).filter(x => x.s > 0)
+          .sort((x, y) => y.s - x.s || x.r.slug.localeCompare(y.r.slug, undefined, { numeric: true })).slice(0, 6).map(x => x.r);
+        list.replaceChildren(...items.map(r => {
+          const li = el('li', { role: 'option', 'aria-selected': 'false' }, el('span', { class: 'sg-name', text: r.name }), statusLabel(r.status) ? el('span', { class: 'sg-sub', text: statusLabel(r.status) }) : null);
+          li.addEventListener('mousedown', e => { e.preventDefault(); go(r); });
+          return li;
+        }));
+        active = -1; list.hidden = !items.length; input.setAttribute('aria-expanded', String(items.length > 0));
+      }
+      input.addEventListener('input', () => { busQuery = input.value; msg.textContent = ''; show(); });
+      input.addEventListener('focus', show);
+      input.addEventListener('blur', hide);
+      input.addEventListener('keydown', e => {
+        if (list.hidden) { if (e.key === 'ArrowDown') show(); return; }
+        if (e.key === 'ArrowDown') { e.preventDefault(); active = (active + 1) % items.length; paint(); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); active = (active - 1 + items.length) % items.length; paint(); }
+        else if (e.key === 'Enter' && active >= 0) { e.preventDefault(); go(items[active]); }
+        else if (e.key === 'Escape') hide();
+      });
+
       form.addEventListener('submit', e => {
         e.preventDefault(); msg.textContent = '';
         const raw = input.value.trim().toLowerCase();
         if (!raw) { msg.textContent = 'Enter a route number.'; return; }
         const q = raw.replace(/^(line|route)\s+/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-        const hit = known.find(l => slugOf(l) === q) || known.find(l => String(l.name || '').toLowerCase().includes(raw));
-        if (hit || !known.length) location.href = CFG.PLANNER_LINE_URL + encodeURIComponent(hit ? slugOf(hit) : q);
+        const hit = routes.find(r => r.slug === q) || routes.find(r => String(r.name).toLowerCase().includes(raw));
+        if (hit) go(hit);
+        else if (!routes.length) go({ slug: q });
         else msg.textContent = `We couldn’t find a bus route “${input.value.trim()}”.`;
       });
       return form;
