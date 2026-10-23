@@ -6,15 +6,13 @@
     TRIP_API: 'https://api.trip-planner.citymetro.xyz',
     ALERTS_API: 'https://ride-metro.felixfeger46.workers.dev',
     ALERTS_SITE: 'https://alerts.citymetro.xyz',
-    LINE_URL: 'https://alerts.citymetro.xyz/line?id=',   // + the line's id
+    LINE_URL: 'https://alerts.citymetro.xyz/lines/line?id=',   // + the line's slug (a, b, 76 ...)
+    TRIP_SITE: 'https://trip-planner.citymetro.xyz',
+    PLANNER_URL: 'https://trip-planner.citymetro.xyz/planner',   // opened as ?from=<station id>&to=<station id>
+    PLANNER_HOME: 'https://trip-planner.citymetro.xyz',
     // Which field on each alerts line says "rail", "bus" or "accessibility". Tried in this order.
     KIND_FIELDS: ['type', 'category', 'kind', 'mode', 'group'],
     REFRESH_MS: 60000
-  };
-  const MODES = ['fastest', 'fewest_transfers', 'fewest_walking'];
-  const MODE_LABEL = { fastest: 'Fastest', fewest_transfers: 'Fewest transfers', fewest_walking: 'Least walking' };
-  const ICON = {
-    walk: 'M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7z'
   };
 
   const $ = (s, r = document) => r.querySelector(s);
@@ -83,20 +81,104 @@
     }
     return null;
   }
+  // ---- "similar name" matching for the suggestion list ----
+  const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  function lev(a, b) {
+    if (!a.length) return b.length; if (!b.length) return a.length;
+    let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+    for (let i = 1; i <= a.length; i++) {
+      const cur = [i];
+      for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = cur;
+    }
+    return prev[b.length];
+  }
+  function scoreStation(name, q) {
+    const n = norm(name); if (!n || !q) return 0;
+    if (n === q) return 100;
+    if (n.startsWith(q)) return 90;
+    const words = n.split(' ');
+    if (words.some(w => w.startsWith(q))) return 80;
+    if (n.includes(q)) return 70;
+    if (q.split(' ').every(t => n.includes(t))) return 60;
+    const qc = q.replace(/ /g, ''); let i = 0;
+    for (const ch of n) if (ch === qc[i]) i++;
+    if (qc.length >= 3 && i === qc.length) return 40;                       // letters in order, e.g. "dtlc"
+    const d = Math.min(lev(n, q), ...words.map(w => lev(w, q)));            // typos, e.g. "unoin station"
+    const lim = q.length <= 4 ? 1 : Math.min(4, Math.round(q.length * 0.25));
+    return d <= lim ? 30 - d : 0;
+  }
+  function suggest(list, q, max = 8) {
+    const nq = norm(q);
+    const byName = (x, y) => x.name.localeCompare(y.name);
+    if (!nq) return list.slice().sort(byName).slice(0, max);
+    return list.map(s => ({ s, sc: scoreStation(s.name, nq) })).filter(x => x.sc > 0)
+      .sort((x, y) => y.sc - x.sc || byName(x.s, y.s)).slice(0, max).map(x => x.s);
+  }
+  function attachSuggest(input) {
+    const ul = el('ul', { class: 'sugg', role: 'listbox', id: 'sugg-' + input.name, hidden: true });
+    input.setAttribute('role', 'combobox'); input.setAttribute('aria-autocomplete', 'list');
+    input.setAttribute('aria-expanded', 'false'); input.setAttribute('aria-controls', ul.id);
+    input.closest('.field').append(ul);
+    let items = [], active = -1;
+    const hide = () => { ul.hidden = true; active = -1; input.setAttribute('aria-expanded', 'false'); };
+    const choose = s => { input.value = s.name; input.dataset.id = s.id; hide(); };
+    const paint = () => [...ul.children].forEach((li, i) => li.setAttribute('aria-selected', String(i === active)));
+    async function show() {
+      let list; try { list = await getStations(); } catch { return hide(); }
+      const count = {}; list.forEach(s => { count[s.name] = (count[s.name] || 0) + 1; });
+      items = suggest(list, input.value);
+      ul.replaceChildren(...items.map(s => {
+        const sub = s.street || (count[s.name] > 1 ? `Station ${s.id}` : '');
+        const li = el('li', { role: 'option', 'aria-selected': 'false' }, el('span', { class: 'sg-name', text: s.name }), sub ? el('span', { class: 'sg-sub', text: sub }) : null);
+        li.addEventListener('mousedown', e => { e.preventDefault(); choose(s); });   // keep the field focused until chosen
+        return li;
+      }));
+      active = -1; ul.hidden = !items.length; input.setAttribute('aria-expanded', String(items.length > 0));
+    }
+    input.addEventListener('input', () => { delete input.dataset.id; show(); });
+    input.addEventListener('focus', show);
+    input.addEventListener('blur', hide);
+    input.addEventListener('keydown', e => {
+      if (ul.hidden) { if (e.key === 'ArrowDown') show(); return; }
+      if (e.key === 'ArrowDown') { e.preventDefault(); active = (active + 1) % items.length; paint(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); active = (active - 1 + items.length) % items.length; paint(); }
+      else if (e.key === 'Enter' && active >= 0) { e.preventDefault(); choose(items[active]); }
+      else if (e.key === 'Escape') hide();
+    });
+  }
   async function initPlanForm() {
     const form = $('#plan-form'); if (!form) return;
-    $('#plan-swap')?.addEventListener('click', () => { const { from, to } = form.elements; [from.value, to.value] = [to.value, from.value]; });
-    form.addEventListener('submit', e => {
-      const { from, to } = form.elements;
-      if (from.value.trim().toLowerCase() === to.value.trim().toLowerCase()) {
-        e.preventDefault(); to.setCustomValidity('Choose a different destination.'); to.reportValidity();
-        to.addEventListener('input', () => to.setCustomValidity(''), { once: true });
-      }
+    const msg = $('#plan-msg');
+    const say = (...nodes) => { if (msg) msg.replaceChildren(...nodes.filter(Boolean)); };
+    const { from, to } = form.elements;
+    attachSuggest(from); attachSuggest(to);
+    $('#plan-swap')?.addEventListener('click', () => {
+      [from.value, to.value] = [to.value, from.value];
+      const f = from.dataset.id, t = to.dataset.id;
+      delete from.dataset.id; delete to.dataset.id;
+      if (t) from.dataset.id = t; if (f) to.dataset.id = f;
     });
-    try {
-      const list = $('#station-list');
-      (await getStations()).slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(s => list.append(el('option', { value: s.name })));
-    } catch { /* typing still works; the results page explains any problem */ }
+    // Look both stations up in the trip planner's database (by id), then open the planner on that journey.
+    form.addEventListener('submit', async e => {
+      e.preventDefault(); say();
+      let stations;
+      try { stations = await getStations(); } catch { location.href = CFG.PLANNER_HOME; return; }
+      const resolve = input => {
+        const byId = input.dataset.id && stations.find(s => String(s.id) === input.dataset.id);
+        return byId && byId.name === input.value ? byId : findStation(stations, input.value);
+      };
+      const a = resolve(from), b = resolve(to);
+      const bad = !a ? from : !b ? to : null;
+      if (bad) {
+        const alts = suggest(stations, bad.value, 4);
+        say(`We couldn’t find “${bad.value.trim()}”.${alts.length ? ' Did you mean:' : ' Pick a station from the suggestions.'}`,
+          ...alts.map(s => el('button', { type: 'button', class: 'sugg-btn', text: s.name, onclick: () => { bad.value = s.name; bad.dataset.id = s.id; say(); } })));
+        return;
+      }
+      if (a.id === b.id) return say('Choose a different destination.');
+      location.href = `${CFG.PLANNER_URL}?from=${encodeURIComponent(a.id)}&to=${encodeURIComponent(b.id)}`;
+    });
   }
 
   /* ---------- Service Status (home) ---------- */
@@ -117,7 +199,21 @@
     if (/\bbus\b/.test(name) || /^(line|route)?\s*\d+[a-z]?\b/.test(name)) return 'bus';
     return 'rail';
   }
-  const lineUrl = l => CFG.LINE_URL + encodeURIComponent(l.id);
+  // The line page uses a short slug, not the database id: "A Line" -> a, "Line 76" -> 76.
+  function slugOf(l) {
+    if (l.slug) return String(l.slug);
+    const n = String(l.name || l.id || '').trim().toLowerCase().replace(/\s*\(.*\)\s*$/, '').replace(/^(line|route)\s+/, '').replace(/\s+(line|route)\b.*$/, '').trim();
+    return n.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || String(l.id);
+  }
+  const lineUrl = l => CFG.LINE_URL + encodeURIComponent(slugOf(l));
+  const IMG_FIELDS = ['iconUrl', 'icon', 'iconURL', 'imageUrl', 'image_url', 'image', 'logoUrl', 'logo'];
+  function pickImage(l, base) {
+    for (const f of IMG_FIELDS) {
+      const v = l[f];
+      if (typeof v === 'string' && v.trim()) { try { return new URL(v.trim(), base).href; } catch { /* try the next field */ } }
+    }
+    return null;
+  }
   const fmtWhen = iso => iso ? new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Los_Angeles' }) + ' PT' : '';
   const cap = s => String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1);
   const trim = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s; };
@@ -171,19 +267,26 @@
         return ls.length ? el('section', { class: 'st-group' }, el('h3', { text: label }),
           el('div', { class: 'lbs' }, ls.map(l => badge(l, { href: lineUrl(l), title: `${l.name}: ${label}` })))) : null;
       });
-      body.replaceChildren(
-        ...(mine.length ? groups.filter(Boolean) : [el('p', { class: 'st-msg', text: `No ${kind} lines to show yet.` })]),
+      body.replaceChildren(...[
+        ...(mine.length ? groups : [el('p', { class: 'st-msg', text: `No ${kind} lines to show yet.` })]),
         preview(all),
-        el('p', { class: 'st-foot' }, el('a', { class: 'btn ghost', href: CFG.ALERTS_SITE, text: 'View all alerts' })));
+        el('p', { class: 'st-foot' }, el('a', { class: 'btn ghost', href: CFG.ALERTS_SITE, text: 'View all alerts' }))
+      ].filter(Boolean));
     }
 
     async function load() {
       try {
-        const [st, inc, mnt] = await Promise.all([
+        const [st, inc, mnt, trip] = await Promise.all([
           fetchJson(CFG.ALERTS_API + '/api/status'),
           fetchJson(CFG.ALERTS_API + '/api/incidents').catch(() => []),
-          fetchJson(CFG.ALERTS_API + '/api/maintenance').catch(() => [])]);
-        data = { lines: st.lineStatuses || [], inc: Array.isArray(inc) ? inc : [], mnt: Array.isArray(mnt) ? mnt : [] };
+          fetchJson(CFG.ALERTS_API + '/api/maintenance').catch(() => []),
+          fetchJson(CFG.TRIP_API + '/api/lines').catch(() => [])]);
+        // Line images: the alerts line's own image first, otherwise the same line's image from the trip planner database.
+        const tripImg = {};
+        (Array.isArray(trip) ? trip : []).forEach(x => { const u = pickImage(x, CFG.TRIP_SITE); if (u) { tripImg[slugOf(x)] = u; tripImg[String(x.id).toLowerCase()] = u; } });
+        const lines = st.lineStatuses || [];
+        lines.forEach(l => { l.iconUrl = pickImage(l, CFG.ALERTS_SITE) || tripImg[slugOf(l)] || tripImg[String(l.id).toLowerCase()] || null; });
+        data = { lines, inc: Array.isArray(inc) ? inc : [], mnt: Array.isArray(mnt) ? mnt : [] };
         render();
       } catch {
         if (!data) body.replaceChildren(el('p', { class: 'st-msg' }, 'Service status is unavailable right now. ', el('a', { href: CFG.ALERTS_SITE, text: 'Check alerts.citymetro.xyz' })));
@@ -193,71 +296,6 @@
     setInterval(() => { if (!document.hidden) load(); }, CFG.REFRESH_MS);
   }
 
-  /* ---------- /trip results ---------- */
-  const fmtDur = s => { const m = Math.max(1, Math.round(s / 60)); return m >= 60 ? `${Math.floor(m / 60)} hr ${m % 60} min` : `${m} min`; };
-  const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
-
-  function routeView(plan, mode) {
-    const r = plan.routes && plan.routes[mode];
-    if (!r || !r.found) return el('p', { class: 'st-msg', text: 'No route found for this option.' });
-    const chips = [plural(r.transfers, 'transfer'), `${fmtDur(r.rideSeconds)} riding`];
-    if (r.walkSeconds > 0) chips.push(`${fmtDur(r.walkSeconds)} walking (${r.walkMiles} mi)`);
-    if (r.waitSeconds > 0) chips.push(`${fmtDur(r.waitSeconds)} allowed for transfers`);
-    const legs = (r.legs || []).map(leg => {
-      if (leg.type === 'walk') {
-        return el('li', { class: 'leg' }, el('div', { class: 'leg-ic' }, svgIcon(ICON.walk)),
-          el('div', {}, el('h3', { text: `Walk ${fmtDur(leg.seconds)}` }), el('p', { text: `${leg.miles} mi from ${leg.from.name} to ${leg.to.name}` })));
-      }
-      const line = (plan.lines && plan.lines[leg.line_id]) || { id: leg.line_id, name: leg.line_id };
-      const stops = leg.stops || [];
-      return el('li', { class: 'leg' }, badge(line),
-        el('div', {}, el('h3', { text: `Take ${line.name || line.id}${leg.headsign ? ' toward ' + leg.headsign : ''}` }),
-          el('p', { text: `${leg.from.name} to ${leg.to.name} · ${plural(Math.max(1, stops.length - 1), 'stop')} · ${fmtDur(leg.seconds)}` }),
-          stops.length > 2 ? el('details', {}, el('summary', { text: 'Show all stops' }), el('ol', { class: 'stops' }, stops.map(s => el('li', { text: s.name })))) : null));
-    });
-    return el('div', {},
-      el('div', { class: 'trip-sum' }, el('span', { class: 'trip-time', text: fmtDur(r.totalSeconds) }), el('span', { class: 'chips' }, chips.map(c => el('span', { class: 'chip', text: c })))),
-      r.same_as ? el('p', { class: 'st-msg', text: `This is the same route as “${MODE_LABEL[r.same_as] || r.same_as}”.` }) : null,
-      el('ol', { class: 'legs' }, legs));
-  }
-
-  async function initTrip() {
-    const out = $('#trip-results'); if (!out) return;
-    const q = new URLSearchParams(location.search), form = $('#plan-form');
-    ['from', 'to'].forEach(k => { if (q.get(k)) form.elements[k].value = q.get(k); });
-    const wanted = MODES.includes(q.get('mode')) ? q.get('mode') : 'fastest';
-    form.elements.mode.value = wanted;
-    if (!q.get('from') || !q.get('to')) { out.replaceChildren(el('p', { class: 'st-msg', text: 'Choose where you are starting and where you are going to see your journey.' })); return; }
-    out.replaceChildren(el('p', { class: 'st-msg', text: 'Finding your best routes…' }));
-    try {
-      const stations = await getStations();
-      const a = findStation(stations, q.get('from')), b = findStation(stations, q.get('to'));
-      if (!a || !b) {
-        out.replaceChildren(el('p', { class: 'st-msg', text: `We couldn’t find ${!a ? '“' + q.get('from') + '”' : '“' + q.get('to') + '”'}. Pick a station from the suggestions and try again.` })); return;
-      }
-      form.elements.from.value = a.name; form.elements.to.value = b.name;
-      document.title = `${a.name} to ${b.name} | City Metro Transit`;
-      const plan = await fetchJson(`${CFG.TRIP_API}/api/plan?from_station=${a.id}&to_station=${b.id}`);
-      if (plan.reason === 'same_station') { out.replaceChildren(el('p', { class: 'st-msg', text: 'Your start and destination are the same station.' })); return; }
-      if (!plan.found) { out.replaceChildren(el('p', { class: 'st-msg', text: 'We couldn’t find a route between those stations.' })); return; }
-      let active = wanted;
-      const panel = el('div', { class: 'trip-card', role: 'tabpanel' });
-      const tabs = MODES.map(m => el('button', { type: 'button', role: 'tab', class: 'mode-tab', 'data-mode': m, text: MODE_LABEL[m] }));
-      const show = m => {
-        active = m; tabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.mode === m)));
-        panel.replaceChildren(routeView(plan, m));
-        q.set('mode', m); history.replaceState(null, '', '?' + q.toString());
-      };
-      tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.mode)));
-      out.replaceChildren(
-        el('h2', { class: 'trip-route', text: `${a.name} → ${b.name}` }),
-        el('div', { class: 'mode-tabs', role: 'tablist', 'aria-label': 'Route options' }, tabs), panel);
-      show(active);
-    } catch (e) {
-      out.replaceChildren(el('p', { class: 'st-msg' }, `We couldn’t plan that trip right now (${e.message}). `, el('a', { href: 'https://trip-planner.citymetro.xyz', text: 'Try the full Trip Planner' })));
-    }
-  }
-
-  const start = () => { initPlanForm(); initStatus(); initTrip(); };
+  const start = () => { initPlanForm(); initStatus(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
