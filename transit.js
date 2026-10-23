@@ -8,6 +8,7 @@
     ALERTS_SITE: 'https://alerts.citymetro.xyz',
     LINE_URL: 'https://alerts.citymetro.xyz/lines/line?id=',   // + the line's slug (a, b, 76 ...)
     TRIP_SITE: 'https://trip-planner.citymetro.xyz',
+    PLANNER_LINE_URL: 'https://trip-planner.citymetro.xyz/?line=',   // bus route search opens this + the route (e.g. 111)
     PLANNED_URL: 'https://alerts.citymetro.xyz',   // "Planned Service Changes" row
     ACCESS_URL: 'https://alerts.citymetro.xyz',    // "Elevator & Escalator Status" row
     // Optional: put your own copies of the rail line images on this site (e.g. /img/lines/a.svg or a.png, named by the line's slug)
@@ -286,7 +287,8 @@
           el('div', { class: 'pv-top' }, el('span', { class: 'pill', 'data-level': i._level, text: i._tag }), el('span', { class: 'pv-when', text: i._when })),
           el('h4', {}, el('a', { href, text: i.title || 'Service alert' })),
           i.description ? el('p', { text: trim(i.description, 140) }) : null,
-          affected.length ? el('div', { class: 'lbs' }, affected.slice(0, 8).map(l => badge(l, { small: true, href: lineUrl(l), title: l.name }))) : null);
+          affected.length ? (kind === 'bus' ? el('p', { class: 'pv-lines', text: affected.map(l => l.name).join(', ') })
+            : el('div', { class: 'lbs' }, affected.slice(0, 8).map(l => badge(l, { small: true, href: lineUrl(l), title: l.name })))) : null);
       });
       return el('section', { class: 'st-preview' }, el('h3', { text: 'Alerts preview' }), cards,
         items.length > 3 ? el('p', { class: 'st-more' }, el('a', { href: CFG.ALERTS_SITE, text: `+${items.length - 3} more alert${items.length - 3 > 1 ? 's' : ''}` })) : null);
@@ -297,7 +299,8 @@
     let busQuery = '';
     // "Find and Track Buses": type a route number and go straight to that line's page.
     function busSearch(all) {
-      const buses = all.filter(l => kindOf(l) === 'bus');
+      // Routes we know about: bus lines from the alerts list plus bus lines from the trip planner's database.
+      const known = [...all.filter(l => kindOf(l) === 'bus'), ...((data.trip || []).filter(x => String(x.type || '').toLowerCase() === 'bus'))];
       const input = el('input', { type: 'search', name: 'route', placeholder: 'Enter route number', autocomplete: 'off', 'aria-label': 'Route number' });
       input.value = busQuery;
       input.addEventListener('input', () => { busQuery = input.value; });
@@ -310,8 +313,9 @@
         const raw = input.value.trim().toLowerCase();
         if (!raw) { msg.textContent = 'Enter a route number.'; return; }
         const q = raw.replace(/^(line|route)\s+/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-        const hit = buses.find(l => slugOf(l) === q) || buses.find(l => String(l.name || '').toLowerCase().includes(raw));
-        if (hit) location.href = lineUrl(hit); else msg.textContent = `We couldn’t find a bus route “${input.value.trim()}”.`;
+        const hit = known.find(l => slugOf(l) === q) || known.find(l => String(l.name || '').toLowerCase().includes(raw));
+        if (hit || !known.length) location.href = CFG.PLANNER_LINE_URL + encodeURIComponent(hit ? slugOf(hit) : q);
+        else msg.textContent = `We couldn’t find a bus route “${input.value.trim()}”.`;
       });
       return form;
     }
@@ -331,7 +335,7 @@
       });
       body.replaceChildren(...[
         kind === 'bus' ? busSearch(all) : null,
-        ...(mine.length ? groups : [el('p', { class: 'st-msg', text: `No ${kind} lines to show yet.` })]),
+        ...(kind === 'bus' ? [] : (mine.length ? groups : [el('p', { class: 'st-msg', text: `No ${kind} lines to show yet.` })])),
         preview(all),
         linkRows(),
         el('p', { class: 'st-foot' }, el('a', { class: 'btn ghost', href: CFG.ALERTS_SITE, text: 'View all alerts' }))
@@ -358,7 +362,7 @@
             : [...(CFG.LOCAL_IMG_DIR ? [CFG.LOCAL_IMG_DIR + s + '.svg', CFG.LOCAL_IMG_DIR + s + '.png'] : []), l.iconUrl].filter(Boolean);
           l.iconUrl = l.iconUrls && l.iconUrls.length ? l.iconUrls[0] : null;
         });
-        data = { lines, inc: Array.isArray(inc) ? inc : [], mnt: Array.isArray(mnt) ? mnt : [] };
+        data = { lines, inc: Array.isArray(inc) ? inc : [], mnt: Array.isArray(mnt) ? mnt : [], trip: Array.isArray(trip) ? trip : [] };
         render();
       } catch {
         if (!data) body.replaceChildren(el('p', { class: 'st-msg' }, 'Service status is unavailable right now. ', el('a', { href: CFG.ALERTS_SITE, text: 'Check alerts.citymetro.xyz' })));
