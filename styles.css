@@ -312,3 +312,17 @@ a.lb:hover,a.lb:focus-visible{transform:scale(1.08);outline:2px solid var(--blue
 .sg-name{font-weight:700}
 .sg-sub{font-size:.85rem;color:var(--muted)}
 .plan-msg .sugg-btn{margin:6px 6px 0 0;padding:6px 12px;border:1.5px solid #fff;border-radius:999px;background:transparent;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+
+/* bus search + service links */
+.bus-search{padding-bottom:14px}
+.bus-search h3{margin:0 0 10px;font-size:1.05rem;color:var(--tile-ink)}
+.bs-row{display:flex;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.bs-row:focus-within{border-color:var(--blue)}
+.bs-row input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font:inherit;padding:14px 16px;-webkit-appearance:none;appearance:none}
+.bs-go{display:flex;align-items:center;justify-content:center;width:54px;border:0;background:var(--blue);color:#fff;cursor:pointer}
+.bs-go svg{width:22px;height:22px;fill:currentColor}
+.bs-msg{margin:8px 0 0;min-height:1.2em;color:var(--muted)}
+.st-links{margin-top:14px;border-top:1px solid var(--line)}
+.st-link{display:flex;align-items:center;justify-content:space-between;padding:16px 4px;border-bottom:1px solid var(--line);color:var(--tile-ink);font-weight:700;text-decoration:none}
+.st-link:hover span{text-decoration:underline}
+.st-link svg{width:22px;height:22px;fill:currentColor}
