@@ -1,0 +1,13 @@
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://www.noupe.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://cdn.jotfor.ms; img-src 'self' data: https://www.noupe.com https://*.citymetro.xyz https://*.workers.dev; font-src 'self' https://cdn.jotfor.ms; connect-src 'self' https://www.noupe.com wss://www.noupe.com https://cloudflareinsights.com https://api.trip-planner.citymetro.xyz https://ride-metro.felixfeger46.workers.dev; frame-src https://www.noupe.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://trip-planner.citymetro.xyz; object-src 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=31536000
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), geolocation=(), payment=()
+/styles.css
+  Cache-Control: no-cache
+/site.js
+  Cache-Control: no-cache
+/transit.js
+  Cache-Control: no-cache
