@@ -10,7 +10,7 @@
     TRIP_SITE: 'https://trip-planner.citymetro.xyz',
     // Optional: put your own copies of the rail line images on this site (e.g. /img/lines/a.svg or a.png, named by the line's slug)
     // and set this to '/img/lines/'. They are tried first, then the image from the database. Leave '' to use the database images only.
-    LOCAL_IMG_DIR: '/img/lines/',
+    LOCAL_IMG_DIR: '',
     PLANNER_URL: 'https://trip-planner.citymetro.xyz/planner',   // opened as ?from=<station id>&to=<station id>
     PLANNER_HOME: 'https://trip-planner.citymetro.xyz',
     // Which field on each alerts line says "rail", "bus" or "accessibility". Tried in this order.
@@ -249,6 +249,20 @@
       });
     });
 
+    // If the alerts list has the same line twice (same name/slug), show it once, using the more serious status.
+    const RANK = { emergency: 5, critical: 4, major_outage: 3, degraded: 2, maintenance: 1, operational: 0 };
+    function dedupe(list) {
+      const out = [], at = new Map(), dup = [];
+      for (const l of list) {
+        const k = slugOf(l);
+        if (!at.has(k)) { at.set(k, out.length); out.push(l); continue; }
+        dup.push(l.id); const j = at.get(k);
+        if ((RANK[l.status] || 0) > (RANK[out[j].status] || 0)) out[j] = l;
+      }
+      if (dup.length) console.info('City Metro: duplicate line entries hidden (ids):', dup.join(', '));
+      return out;
+    }
+
     function preview(all) {
       const ids = new Set(all.filter(l => kindOf(l) === kind).map(l => l.id));
       const sysWide = i => (!(i.affectedLines || []).length && !(i.affectedWaypoints || []).length) ||
@@ -278,7 +292,7 @@
 
     function render() {
       if (!data) return;
-      const all = data.lines, mine = all.filter(l => kindOf(l) === kind);
+      const all = data.lines, mine = dedupe(all.filter(l => kindOf(l) === kind));
       const known = new Set(GROUPS.map(g => g[0]));
       const groups = GROUPS.map(([key, label]) => {
         const ls = mine.filter(l => (known.has(l.status) ? l.status : 'operational') === key);
@@ -307,7 +321,7 @@
         lines.forEach(l => {
           l.iconUrl = kindOf(l) === 'bus' ? null : (pickImage(l, CFG.ALERTS_SITE) || tripImg[slugOf(l)] || tripImg[String(l.id).toLowerCase()] || null);
           const s = encodeURIComponent(slugOf(l));
-         l.iconUrls = l.iconUrl ? [...(CFG.LOCAL_IMG_DIR ? [CFG.LOCAL_IMG_DIR + s + '.svg'] : []), l.iconUrl] : null;
+          l.iconUrls = l.iconUrl ? [...(CFG.LOCAL_IMG_DIR ? [CFG.LOCAL_IMG_DIR + s + '.svg', CFG.LOCAL_IMG_DIR + s + '.png'] : []), l.iconUrl] : null;
         });
         data = { lines, inc: Array.isArray(inc) ? inc : [], mnt: Array.isArray(mnt) ? mnt : [] };
         render();
