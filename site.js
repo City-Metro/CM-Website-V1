@@ -1,7 +1,7 @@
 /* ===== EDIT ME ===== */
 const ANNOUNCEMENT = {
   enabled: true, // set to true to show  bar
-  text: "Welcome to the brand new City Metro official website! Please note this website is under development.",
+  text: "Welcome to the brand new official City Metro website!",
   linkText: "Learn more",
   linkHref: "https://citymetro.xyz"
 };
