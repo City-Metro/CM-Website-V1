@@ -3,7 +3,7 @@ const ANNOUNCEMENT = {
   enabled: true, // set to true to show  bar
   text: "Welcome to the brand new official City Metro website!",
   linkText: "Report a problem",
-  linkHref: "/contact.html"
+  linkHref: "/contact"
 };
 const NAV = [
   { label: "Home", href: "/" },
