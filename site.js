@@ -1,9 +1,9 @@
 /* ===== EDIT ME ===== */
 const ANNOUNCEMENT = {
   enabled: true, // set to true to show  bar
-  text: "Welcome to the brand new official City Metro website!",
-  linkText: "Report a problem",
-  linkHref: "/contact"
+  text: "City Metro Single Sign-On is not working at this time.",
+  linkText: "Learn more",
+  linkHref: "https://status.citymetro.xyz"
 };
 const NAV = [
   { label: "Home", href: "/" },
