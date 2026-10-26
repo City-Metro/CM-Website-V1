@@ -3,7 +3,7 @@ const ANNOUNCEMENT = {
   enabled: true, // set to true to show  bar
   text: "City Metro Single Sign-On is not working at this time.",
   linkText: "Learn more",
-  linkHref: "https://status.citymetro.xyz"
+  linkHref: "https://status.citymetro.xyz/incident/1103899"
 };
 const NAV = [
   { label: "Home", href: "/" },
