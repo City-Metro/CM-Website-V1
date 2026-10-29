@@ -1,9 +1,9 @@
 /* ===== EDIT ME ===== */
 const ANNOUNCEMENT = {
-  enabled: true, // set to true to show  bar
-  text: "City Metro Single Sign-On is back online.",
+  enabled: false, // set to true to show  bar
+  text: "Welcome to the brand new City Metro official website! Please note this website is under development.",
   linkText: "Learn more",
-  linkHref: "https://status.citymetro.xyz/incident/1103899"
+  linkHref: "https://citymetro.xyz"
 };
 const NAV = [
   { label: "Home", href: "/" },
@@ -19,7 +19,9 @@ const NAV = [
     { label: "Contact", href: "/contact" } ] },
   { label: "Fares", href: "/fares", items: [
     { label: "MyBrickPass", href: "https://mybrickpass.citymetro.xyz" } ] },
-  { label: "Ride", items: [
+  { label: "Ride", href: "/ride", items: [
+    { label: "City Metro Rail", href: "/rail" },
+    { label: "City Metro Bus", href: "/bus" },
     { label: "Trip Planner", href: "https://trip-planner.citymetro.xyz" },
     { label: "Map", href: "https://map.citymetro.xyz" },
     { label: "Alerts", href: "https://alerts.citymetro.xyz" },
