@@ -328,3 +328,12 @@ a.lb:hover,a.lb:focus-visible{transform:scale(1.08);outline:2px solid var(--blue
 .st-link svg{width:22px;height:22px;fill:currentColor}
 .pv .pv-lines{margin:0;font-weight:700;color:var(--text);font-size:.9rem}
 .sugg.inline{position:static;margin:8px 0 0;max-height:260px;box-shadow:0 6px 18px rgba(0,0,0,.18);z-index:auto}
+
+/* ride / rail / bus pages */
+.line-card ol{margin:0;padding-left:1.2rem;color:var(--muted)}
+.line-card ul{margin:0;padding-left:1.2rem;color:var(--muted)}
+.line-card li{margin:6px 0}
+.card-links{margin:12px 0 0}
+.card-links a{font-weight:700;color:var(--tile-ink)}
+.split-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin:24px 0}
+.about-img + .btn-row{margin-top:-8px}
