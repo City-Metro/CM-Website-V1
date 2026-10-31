@@ -16,6 +16,7 @@ const NAV = [
     { label: "City MetroLink", href: "https://metrolink.citymetro.xyz" },
     { label: "Web Services Status", href: "https://status.citymetro.xyz" },
     { label: "Customer Code of Conduct", href: "https://police.citymetro.xyz/customercodeofconduct.pdf" },
+    { label: "Union Station", href: "https://" },
     { label: "Contact", href: "/contact" } ] },
   { label: "Fares", href: "/fares", items: [
     { label: "MyBrickPass", href: "https://mybrickpass.citymetro.xyz" } ] },
