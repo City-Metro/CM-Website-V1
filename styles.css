@@ -337,3 +337,7 @@ a.lb:hover,a.lb:focus-visible{transform:scale(1.08);outline:2px solid var(--blue
 .card-links a{font-weight:700;color:var(--tile-ink)}
 .split-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin:24px 0}
 .about-img + .btn-row{margin-top:-8px}
+.announce.warning{background:#fde68a;color:#3b2a00}
+.announce.critical{background:#b91c1c;color:#fff}
+.announce.warning a,.announce.warning button{color:#3b2a00}
+.announce.critical a,.announce.critical button{color:#fff}
