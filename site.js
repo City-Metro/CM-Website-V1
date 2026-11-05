@@ -1,10 +1,11 @@
 /* ===== EDIT ME ===== */
 const ANNOUNCEMENT = {
-  enabled: false, // set to true to show  bar
+  enabled: true, // set to true to show  bar
   text: "Welcome to the brand new City Metro official website! Please note this website is under development.",
   linkText: "Learn more",
   linkHref: "https://citymetro.xyz"
 };
+const ANNOUNCEMENT_URL = "https://ride-metro.felixfeger46.workers.dev/api/announcement";
 const NAV = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about", items: [
@@ -16,7 +17,6 @@ const NAV = [
     { label: "City MetroLink", href: "https://metrolink.citymetro.xyz" },
     { label: "Web Services Status", href: "https://status.citymetro.xyz" },
     { label: "Customer Code of Conduct", href: "https://police.citymetro.xyz/customercodeofconduct.pdf" },
-    { label: "Union Station", href: "https://unionstation.citymetro.xyz" },
     { label: "Contact", href: "/contact" } ] },
   { label: "Fares", href: "/fares", items: [
     { label: "MyBrickPass", href: "https://mybrickpass.citymetro.xyz" } ] },
@@ -60,10 +60,7 @@ function renderHeader() {
     : n.items
     ? `<li class="has-dd"><button class="dd-toggle" aria-expanded="false">${n.label}</button><ul class="dd-menu">${n.items.map(li).join("")}</ul></li>`
     : `<li><a class="nav-link ${path === n.href ? "active" : ""}" href="${n.href}">${n.label}</a></li>`).join("");
-  let bar = "";
-  if (ANNOUNCEMENT.enabled && !sessionStorage.getItem("announceClosed")) {
-    bar = `<div class="announce" role="region" aria-label="Announcement">${ANNOUNCEMENT.text} ${ANNOUNCEMENT.linkHref ? `<a href="${ANNOUNCEMENT.linkHref}">${ANNOUNCEMENT.linkText}</a>` : ""}<button aria-label="Dismiss">&times;</button></div>`;
-  }
+  const bar = `<div id="announce-slot"></div>`;
   document.getElementById("site-header").innerHTML = `${bar}
   <header class="site-header"><div class="container header-inner">
     <a class="logo" href="/" aria-label="City Metro home"><img src="/logo.png" alt="City Metro"></a>
@@ -82,8 +79,41 @@ function renderHeader() {
     if (!wasOpen) { p.classList.add("open"); t.setAttribute("aria-expanded", "true"); }
   });
   document.addEventListener("click", () => document.querySelectorAll(".has-dd").forEach(x => x.classList.remove("open")));
-  const x = document.querySelector(".announce button");
-  if (x) x.onclick = () => { sessionStorage.setItem("announceClosed", "1"); x.parentElement.remove(); };
+  loadAnnouncement();
+}
+
+function showAnnouncement(a) {
+  const slot = document.getElementById("announce-slot");
+  if (!slot || !a || !a.text) return;
+  if (sessionStorage.getItem("announceClosed") === a.text) return; // a new message shows again
+  const bar = document.createElement("div");
+  bar.className = "announce " + (["warning", "critical"].includes(a.type) ? a.type : "info");
+  bar.setAttribute("role", "region"); bar.setAttribute("aria-label", "Announcement");
+  bar.append(a.text + " ");
+  if (a.link) {
+    const l = document.createElement("a");
+    l.href = a.link; l.textContent = a.linkText || "Learn more";
+    if (/^https?:/i.test(a.link) && !a.link.startsWith(location.origin)) l.rel = "noopener";
+    bar.append(l);
+  }
+  const x = document.createElement("button");
+  x.setAttribute("aria-label", "Dismiss"); x.innerHTML = "&times;";
+  x.onclick = () => { sessionStorage.setItem("announceClosed", a.text); bar.remove(); };
+  bar.append(x);
+  slot.replaceChildren(bar);
+}
+
+async function loadAnnouncement() {
+  const fallback = ANNOUNCEMENT.enabled
+    ? { text: ANNOUNCEMENT.text, link: ANNOUNCEMENT.linkHref, linkText: ANNOUNCEMENT.linkText } : null;
+  try {
+    const r = await fetch(ANNOUNCEMENT_URL, { headers: { Accept: "application/json" } });
+    if (!r.ok) throw new Error(r.status);
+    const data = await r.json();
+    showAnnouncement(data && data.text ? data : null); // null = cleared on purpose, show nothing
+  } catch (e) {
+    showAnnouncement(fallback); // worker down: show the static banner
+  }
 }
 
 function renderFooter() {
