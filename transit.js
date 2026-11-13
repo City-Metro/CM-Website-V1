@@ -4,7 +4,7 @@
   'use strict';
   const CFG = {
     TRIP_API: 'https://api.trip-planner.citymetro.xyz',
-    ALERTS_API: 'https://ride-metro.felixfeger46.workers.dev',
+    ALERTS_API: 'https://api.alerts.citymetro.xyz',
     ALERTS_SITE: 'https://alerts.citymetro.xyz',
     LINE_URL: 'https://alerts.citymetro.xyz/lines/line?id=',   // + the line's slug (a, b, 76 ...)
     TRIP_SITE: 'https://trip-planner.citymetro.xyz',
