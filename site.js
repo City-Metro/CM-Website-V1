@@ -5,7 +5,7 @@ const ANNOUNCEMENT = {
   linkText: "Learn more",
   linkHref: "https://citymetro.xyz"
 };
-const ANNOUNCEMENT_URL = "https://ride-metro.felixfeger46.workers.dev/api/announcement";
+const ANNOUNCEMENT_URL = "https://api.alerts.citymetro.xyz/api/announcement";
 const NAV = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about", items: [
