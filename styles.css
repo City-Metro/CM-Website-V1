@@ -341,3 +341,6 @@ a.lb:hover,a.lb:focus-visible{transform:scale(1.08);outline:2px solid var(--blue
 .announce.critical{background:#b91c1c;color:#fff}
 .announce.warning a,.announce.warning button{color:#3b2a00}
 .announce.critical a,.announce.critical button{color:#fff}
+/* keep text sizes consistent on iPhone/iPad (stops Safari enlarging some text, such as the banner link) */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.announce a{font:inherit;text-decoration:underline}
