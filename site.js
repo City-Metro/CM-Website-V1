@@ -5,7 +5,7 @@ const ANNOUNCEMENT = {
   linkText: "Learn more",
   linkHref: "https://citymetro.xyz"
 };
-const ANNOUNCEMENT_URL = "https://ride-metro.felixfeger46.workers.dev/api/announcement";
+const ANNOUNCEMENT_URL = "https://api.alerts.citymetro.xyz/api/annoucement";
 const NAV = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about", items: [
@@ -71,7 +71,11 @@ function renderHeader() {
   const logoImg = document.querySelector(".logo img"); // CSP blocks inline onerror, so attach it here
   if (logoImg) logoImg.addEventListener("error", () => logoImg.replaceWith("m"), { once: true });
   const btn = document.querySelector(".menu-btn"), nav = document.querySelector(".nav");
-  btn.onclick = () => { const o = nav.classList.toggle("open"); btn.setAttribute("aria-expanded", o); document.body.style.overflow = o ? "hidden" : ""; };
+  // The menu panel starts right under the header, however tall the announcement bar above it is.
+  const headerEl = document.querySelector(".site-header");
+  const placeNav = () => { nav.style.top = Math.round(headerEl.getBoundingClientRect().bottom) + "px"; };
+  btn.onclick = () => { const o = nav.classList.toggle("open"); btn.setAttribute("aria-expanded", o); document.body.style.overflow = o ? "hidden" : ""; if (o) placeNav(); };
+  window.addEventListener("resize", () => { if (nav.classList.contains("open")) placeNav(); });
   document.querySelectorAll(".dd-toggle").forEach(t => t.onclick = (e) => {
     e.stopPropagation();
     const p = t.parentElement, wasOpen = p.classList.contains("open");
@@ -98,9 +102,10 @@ function showAnnouncement(a) {
   }
   const x = document.createElement("button");
   x.setAttribute("aria-label", "Dismiss"); x.innerHTML = "&times;";
-  x.onclick = () => { sessionStorage.setItem("announceClosed", a.text); bar.remove(); };
+  x.onclick = () => { sessionStorage.setItem("announceClosed", a.text); bar.remove(); window.dispatchEvent(new Event("resize")); };
   bar.append(x);
   slot.replaceChildren(bar);
+  window.dispatchEvent(new Event("resize")); // re-places the mobile menu if it is open
 }
 
 async function loadAnnouncement() {
